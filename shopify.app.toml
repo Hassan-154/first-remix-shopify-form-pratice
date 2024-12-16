@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "183ba44346429003f4a8015caea9ebf7"
-application_url = "https://site-about-inspections-router.trycloudflare.com"
+application_url = "https://simon-tracker-leon-dictionaries.trycloudflare.com"
 embedded = true
 name = "pratice-project"
 handle = "pratice-project"
@@ -19,9 +19,9 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [
-  "https://site-about-inspections-router.trycloudflare.com/auth/callback",
-  "https://site-about-inspections-router.trycloudflare.com/auth/shopify/callback",
-  "https://site-about-inspections-router.trycloudflare.com/api/auth/callback"
+  "https://simon-tracker-leon-dictionaries.trycloudflare.com/auth/callback",
+  "https://simon-tracker-leon-dictionaries.trycloudflare.com/auth/shopify/callback",
+  "https://simon-tracker-leon-dictionaries.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]
