@@ -179,9 +179,7 @@ export default function Index() {
     }
   }
   return (
-    <Page
-      title="Custom form"
-      backAction={{ content: "Bac" }}>
+    <Page title="Custom form" backAction={{ content: "Bac" }}>
       <Form method="post">
         <BlockStack gap="500">
           <InlineStack align="space-between">
