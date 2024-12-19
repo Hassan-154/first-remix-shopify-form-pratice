@@ -13,7 +13,6 @@ import {
   LegacyStack,
 } from "@shopify/polaris";
 import { useState, useCallback } from "react";
-
 import variantTitleRadioData from "./utility/variantTitleRadio";
 import allProductsOrSomeData from "./utility/allProductsOrSome";
 import { customLabelSelect } from "./utility/customLabels";
@@ -27,6 +26,10 @@ export default function Feed() {
     feedName: "",
     storeCurrencyType: "MNX",
     appendCurrencyOptions: "Do Not append.",
+    allProductsOrSome: {
+      option: "All Products",
+    },
+
     featuredProductsTags: ["tag1", "tag2"],
     variantTitleOption: "Do NOT append (default)",
     useCompareAtPriceOption: "Use both",
@@ -77,13 +80,37 @@ export default function Feed() {
 
   console.log("productFeedData: ", productFeed);
 
-  //to update data in state
+  //to update data in first level state
   const handleInputChange = useCallback((name, value) => {
     setProductFeed((prevData) => ({
       ...prevData,
       [name]: value,
     }));
   }, []);
+
+  //to update data related to product collection
+ const handleInputCollection = useCallback(
+  (dataFromJSon, category, optionName) => {
+    setProductFeed((prev) => {
+      const { productsCollections, ...rest } = prev[category];
+      return {
+        ...prev,
+        [category]: {
+          ...rest,
+          option: optionName,
+        },
+      };
+    });
+
+    const found = dataFromJSon.find((item) => item.option === optionName);
+
+    if (found && "collection" in found) {
+      selectProductsFromResources(category);
+    }
+  },
+  []
+);
+
 
   //to handle store currency multiSelect option
   const storeCurrencyOptions = [
@@ -154,15 +181,26 @@ export default function Feed() {
   }, []);
 
   // to handle the resource picker
-  async function selectProducts() {
-    const products = await window.shopify.resourcePicker({
-        type: "product",
+  async function selectProductsFromResources( category ) {
+    try {
+      console.log("resource-picker function called.");
+      const products = await window.shopify.resourcePicker({
+        type: "collection",
         multiple: true,
-        action: "select",
-        
-    });
-    console.log(products); // Process the selected products here
-}
+      });
+      setProductFeed((prev) => ({
+        ...prev,
+        [category]: {
+          ...prev[category],
+          productsCollections: products
+        },
+      }));
+      console.log(products);
+      
+    } catch (error) {
+      console.error("Error selecting products:", error);
+    }
+  }
 
   return (
     <Page
@@ -170,10 +208,9 @@ export default function Feed() {
       title="Update Product Feed"
       compactTitle
     >
-    
       <BlockStack gap="500">
         <Card>
-        <Text onClick={selectProducts}>click to check resource-picker</Text>
+          <Button>click to check resource-picker</Button>
           <BlockStack gap="500">
             <TextField
               label="Feed Name"
@@ -238,17 +275,30 @@ export default function Feed() {
                     key={id}
                     label={productsItems.option}
                     id={productsItems.option}
-                    name="appendCurrencyOptions"
+                    name=""
                     checked={
-                      productFeed.appendCurrencyOptions === productsItems.option
+                      productFeed.allProductsOrSome.option ===
+                      productsItems.option
                     }
-                    onChange={(_, newValue) =>
-                      handleInputChange("appendCurrencyOptions", newValue)
+                    onChange={(_, optionName) =>
+                      handleInputCollection(
+                        allProductsOrSomeData,
+                        "allProductsOrSome",
+                        optionName,
+                      )
                     }
                   />
-                  {/* add here conditional  With multi-select and manual selection */}
                 </BlockStack>
               ))}
+              { productFeed.allProductsOrSome.productsCollections &&
+                <LegacyStack spacing="tight">
+                {productFeed.allProductsOrSome.productsCollections.map((option, index) => (
+                  <Tag key={index} onRemove={() => removeTag(option)}>
+                    {option.title}
+                  </Tag>
+                ))}
+              </LegacyStack>
+              }
             </Box>
             {/* add search-bar and checkBox */}
             <Box></Box>
