@@ -10,19 +10,16 @@ import {
   Button,
   InlineGrid,
   Tag,
-  Listbox,
-  Combobox,
-  Icon,
-  AutoSelection,
   LegacyStack,
 } from "@shopify/polaris";
-import { SearchIcon } from "@shopify/polaris-icons";
-import { useState, useCallback, useMemo, useEffect } from "react";
-import { useSubmit } from "@remix-run/react";
+import { useState, useCallback } from "react";
+
 import variantTitleRadioData from "./utility/variantTitleRadio";
 import allProductsOrSomeData from "./utility/allProductsOrSome";
 import { customLabelSelect } from "./utility/customLabels";
 import addTaxToAllPricesData from "./utility/addTaxToAllPrices";
+import useCompareAtPriceData from "./utility/useCompareAtPrice";
+import exportModeData from "./utility/exportMode";
 
 export default function Feed() {
   // to handle all the data related to this component
@@ -32,7 +29,23 @@ export default function Feed() {
     appendCurrencyOptions: "Do Not append.",
     featuredProductsTags: ["tag1", "tag2"],
     variantTitleOption: "Do NOT append (default)",
+    useCompareAtPriceOption: "Use both",
     variantTitleCustomOption: "",
+    exportModeOption: [
+      {
+        option: "Export all variants of a product",
+        modeType: [
+          {
+            id: 1,
+            option: "Export first variant of a product(default)",
+          },
+          {
+            id: 2,
+            option: "",
+          },
+        ],
+      },
+    ],
     customLabels: {
       customLabel0: "",
       customLabel1: "",
@@ -140,14 +153,27 @@ export default function Feed() {
     }));
   }, []);
 
+  // to handle the resource picker
+  async function selectProducts() {
+    const products = await window.shopify.resourcePicker({
+        type: "product",
+        multiple: true,
+        action: "select",
+        
+    });
+    console.log(products); // Process the selected products here
+}
+
   return (
     <Page
       backAction={{ content: "Products", url: "#" }}
       title="Update Product Feed"
       compactTitle
     >
+    
       <BlockStack gap="500">
         <Card>
+        <Text onClick={selectProducts}>click to check resource-picker</Text>
           <BlockStack gap="500">
             <TextField
               label="Feed Name"
@@ -221,6 +247,74 @@ export default function Feed() {
                     }
                   />
                   {/* add here conditional  With multi-select and manual selection */}
+                </BlockStack>
+              ))}
+            </Box>
+            {/* add search-bar and checkBox */}
+            <Box></Box>
+          </BlockStack>
+        </Card>
+        <Card>
+          {/* Export Mode under development */}
+          <BlockStack gap="150">
+            <Text variant="headingSm" as="h6">
+              Export Mode
+            </Text>
+            {exportModeData.map((productsItems, id) => (
+              <InlineGrid columns={2} key={id}>
+                <BlockStack>
+                  <RadioButton
+                    key={id}
+                    label={productsItems.option}
+                    id={productsItems.option}
+                    name=""
+                    checked={
+                      productFeed.appendCurrencyOptions === productsItems.option
+                    }
+                    onChange={(_, newValue) => handleInputChange("", newValue)}
+                  />
+                </BlockStack>
+                <BlockStack>
+                  <RadioButton
+                    key={id}
+                    label={productsItems.option}
+                    id={productsItems.option}
+                    name=""
+                    checked={
+                      productFeed.appendCurrencyOptions === productsItems.option
+                    }
+                    onChange={(_, newValue) => handleInputChange("", newValue)}
+                  />
+                </BlockStack>
+              </InlineGrid>
+            ))}
+
+            {/* add search-bar and checkBox */}
+            <Box></Box>
+          </BlockStack>
+        </Card>
+        <Card>
+          {/* Use 'Compare at' price */}
+          <BlockStack gap="150">
+            <Text variant="headingSm" as="h6">
+              Use 'Compare at' price
+            </Text>
+            <Box>
+              {useCompareAtPriceData.map((productsItems, id) => (
+                <BlockStack key={id}>
+                  <RadioButton
+                    key={id}
+                    label={`${productsItems.option} ${productsItems.description}`}
+                    id={productsItems.option}
+                    name=""
+                    checked={
+                      productFeed.useCompareAtPriceOption ===
+                      productsItems.option
+                    }
+                    onChange={(_, newValue) =>
+                      handleInputChange("useCompareAtPriceOption", newValue)
+                    }
+                  />
                 </BlockStack>
               ))}
             </Box>
