@@ -89,28 +89,31 @@ export default function Feed() {
   }, []);
 
   //to update data related to product collection
- const handleInputCollection = useCallback(
-  (dataFromJSon, category, optionName) => {
-    setProductFeed((prev) => {
-      const { productsCollections, ...rest } = prev[category];
-      return {
-        ...prev,
-        [category]: {
-          ...rest,
-          option: optionName,
-        },
-      };
-    });
+  const handleInputCollection = useCallback(
+    (dataFromJSon, category, optionName) => {
+      if (dataFromJSon === "remove") {
+        console.log("now remove can work.");
+      } else {
+        setProductFeed((prev) => {
+          const { productsCollections, ...rest } = prev[category];
+          return {
+            ...prev,
+            [category]: {
+              ...rest,
+              option: optionName,
+            },
+          };
+        });
 
-    const found = dataFromJSon.find((item) => item.option === optionName);
+        const found = dataFromJSon.find((item) => item.option === optionName);
 
-    if (found && "collection" in found) {
-      selectProductsFromResources(category);
-    }
-  },
-  []
-);
-
+        if (found && "collection" in found) {
+          selectProductsFromResources(category);
+        }
+      }
+    },
+    [],
+  );
 
   //to handle store currency multiSelect option
   const storeCurrencyOptions = [
@@ -181,7 +184,7 @@ export default function Feed() {
   }, []);
 
   // to handle the resource picker
-  async function selectProductsFromResources( category ) {
+  async function selectProductsFromResources(category) {
     try {
       console.log("resource-picker function called.");
       const products = await window.shopify.resourcePicker({
@@ -192,11 +195,10 @@ export default function Feed() {
         ...prev,
         [category]: {
           ...prev[category],
-          productsCollections: products
+          productsCollections: products,
         },
       }));
       console.log(products);
-      
     } catch (error) {
       console.error("Error selecting products:", error);
     }
@@ -290,15 +292,17 @@ export default function Feed() {
                   />
                 </BlockStack>
               ))}
-              { productFeed.allProductsOrSome.productsCollections &&
+              {productFeed.allProductsOrSome.productsCollections && (
                 <LegacyStack spacing="tight">
-                {productFeed.allProductsOrSome.productsCollections.map((option, index) => (
-                  <Tag key={index} onRemove={() => removeTag(option)}>
-                    {option.title}
-                  </Tag>
-                ))}
-              </LegacyStack>
-              }
+                  {productFeed.allProductsOrSome.productsCollections.map(
+                    (option, index) => (
+                      <Tag key={index} onRemove={handleInputCollection( "remove", option.id)}>
+                        {option.title}
+                      </Tag>
+                    ),
+                  )}
+                </LegacyStack>
+              )}
             </Box>
             {/* add search-bar and checkBox */}
             <Box></Box>
