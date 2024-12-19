@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "183ba44346429003f4a8015caea9ebf7"
-application_url = "https://brook-call-lack-hosts.trycloudflare.com"
+application_url = "https://packaging-iowa-cam-evaluations.trycloudflare.com"
 embedded = true
 name = "pratice-project"
 handle = "pratice-project"
@@ -19,9 +19,9 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [
-  "https://brook-call-lack-hosts.trycloudflare.com/auth/callback",
-  "https://brook-call-lack-hosts.trycloudflare.com/auth/shopify/callback",
-  "https://brook-call-lack-hosts.trycloudflare.com/api/auth/callback"
+  "https://packaging-iowa-cam-evaluations.trycloudflare.com/auth/callback",
+  "https://packaging-iowa-cam-evaluations.trycloudflare.com/auth/shopify/callback",
+  "https://packaging-iowa-cam-evaluations.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]

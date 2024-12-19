@@ -22,6 +22,7 @@ import { useSubmit } from "@remix-run/react";
 import variantTitleRadioData from "./utility/variantTitleRadio";
 import allProductsOrSomeData from "./utility/allProductsOrSome";
 import { customLabelSelect } from "./utility/customLabels";
+import addTaxToAllPricesData from "./utility/addTaxToAllPrices";
 
 export default function Feed() {
   // to handle all the data related to this component
@@ -31,6 +32,7 @@ export default function Feed() {
     appendCurrencyOptions: "Do Not append.",
     featuredProductsTags: ["tag1", "tag2"],
     variantTitleOption: "Do NOT append (default)",
+    variantTitleCustomOption: "",
     customLabels: {
       customLabel0: "",
       customLabel1: "",
@@ -47,6 +49,9 @@ export default function Feed() {
     },
     excludeOptionsSize: "",
     shippingLabel: "",
+    addTaxToAllPrices: "Use Global Settings (default)",
+    TaxRatePercentage: "",
+    roundAndFormat: "",
   });
 
   //state to handle validations error
@@ -66,8 +71,6 @@ export default function Feed() {
       [name]: value,
     }));
   }, []);
-
-  const submit = useSubmit();
 
   //to handle store currency multiSelect option
   const storeCurrencyOptions = [
@@ -280,7 +283,7 @@ export default function Feed() {
         <Card>
           <BlockStack gap="200">
             <Text variant="headingSm" as="h6">
-            Featured collection on custom labels
+              Featured collection on custom labels
             </Text>
             <div
               onKeyDown={(e) => {
@@ -375,13 +378,56 @@ export default function Feed() {
         <Card>
           <BlockStack gap="200">
             <Text variant="headingSm" as="h6">
+              Variant Title
+            </Text>
+            {/* map the radio button content */}
+            <Box>
+              {variantTitleRadioData.map((variantItems, id) => (
+                <BlockStack key={id}>
+                  <RadioButton
+                    key={id}
+                    label={`${variantItems.option} - ${variantItems.description}`}
+                    id={variantItems.option}
+                    name="variantTitleOption"
+                    checked={
+                      productFeed.variantTitleOption === variantItems.option
+                    }
+                    onChange={(_, newValue) =>
+                      handleInputChange("variantTitleOption", newValue)
+                    }
+                  />
+                  {variantItems.option === "Append custom text" &&
+                    productFeed.variantTitleOption === "Append custom text" && (
+                      <InlineGrid columns={2}>
+                        <TextField
+                          label="Custom text to append"
+                          name="customTextForAppend"
+                          value={productFeed.variantTitleCustomOption}
+                          onChange={(value) =>
+                            handleInputChange("variantTitleCustomOption", value)
+                          }
+                          autoComplete="off"
+                          placeholder="Custom text "
+                        />
+                      </InlineGrid>
+                    )}
+                </BlockStack>
+              ))}
+            </Box>
+          </BlockStack>
+        </Card>
+        <Card>
+          <BlockStack gap="200">
+            <Text variant="headingSm" as="h6">
               Exclude options ( such as size) from the generated variant titles
               ( above).
             </Text>
             <TextField
               name=""
               value={productFeed.excludeOptionsSize}
-              onChange={(value) => handleInputChange("excludeOptionsSize", value)}
+              onChange={(value) =>
+                handleInputChange("excludeOptionsSize", value)
+              }
               autoComplete="off"
               placeholder="Text to exclude"
               // error={
@@ -409,31 +455,53 @@ export default function Feed() {
           </BlockStack>
         </Card>
         <Card>
-          <BlockStack gap="200">
+          {/* all products or some of them */}
+          <BlockStack gap="150">
             <Text variant="headingSm" as="h6">
-              Variant Title
+              Add tax to all prices - override global Settings
             </Text>
-            {/* map the radio button content */}
             <Box>
-              <Box>
-                {variantTitleRadioData.map((variantItems, id) => (
-                  <BlockStack key={id}>
-                    <RadioButton
-                      key={id}
-                      label={`${variantItems.option} - ${variantItems.description}`}
-                      id={variantItems.option}
-                      name="variantTitleOption"
-                      checked={
-                        productFeed.variantTitleOption === variantItems.option
-                      }
-                      onChange={(_, newValue) =>
-                        handleInputChange("variantTitleOption", newValue)
-                      }
-                    />
-                  </BlockStack>
-                ))}
-              </Box>
+              {addTaxToAllPricesData.map((productsItems, id) => (
+                <BlockStack key={id}>
+                  <RadioButton
+                    label={productsItems.option}
+                    id={productsItems.option}
+                    name=""
+                    checked={
+                      productFeed.addTaxToAllPrices === productsItems.option
+                    }
+                    onChange={(_, newValue) =>
+                      handleInputChange("addTaxToAllPrices", newValue)
+                    }
+                  />
+                  {productsItems.inputTypes &&
+                    productFeed.addTaxToAllPrices ===
+                      "Do add tax to prices - set tax rate below" && (
+                      <InlineGrid columns={2} gap={400}>
+                        {productsItems.inputTypes.map((typeList, id) => (
+                          <InlineGrid key={id}>
+                            <Text variant="headingSm" as="h6">
+                              {typeList.title}
+                            </Text>
+                            <TextField
+                              type="number"
+                              name=""
+                              value={productFeed[typeList.para]}
+                              onChange={(value) =>
+                                handleInputChange(typeList.para, value)
+                              }
+                              autoComplete="off"
+                              placeholder=""
+                            />
+                          </InlineGrid>
+                        ))}
+                      </InlineGrid>
+                    )}
+                </BlockStack>
+              ))}
             </Box>
+
+            {/* add search-bar and checkBox */}
           </BlockStack>
         </Card>
         <Card>
