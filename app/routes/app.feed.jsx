@@ -13,25 +13,15 @@ import {
   Listbox,
   Combobox,
   Icon,
-  TextContainer,
-  LegacyStack,
   AutoSelection,
+  LegacyStack,
 } from "@shopify/polaris";
 import { SearchIcon } from "@shopify/polaris-icons";
-import { useState, useCallback, useMemo } from "react";
-import { useActionData, useSubmit } from "@remix-run/react";
-import { redirect } from "@remix-run/node";
+import { useState, useCallback, useMemo, useEffect } from "react";
+import { useSubmit } from "@remix-run/react";
 import variantTitleRadioData from "./utility/variantTitleRadio";
 import allProductsOrSomeData from "./utility/allProductsOrSome";
-
-export async function action({ request }) {
-  console.log("its working now.. ");
-  const formData = await request.formData();
-
-  // const customizedTitle = String(formData.get("customizedTitle"));
-  // Redirect to dashboard if validation is successful
-  // return redirect("/dashboard");
-}
+import { customLabelSelect } from "./utility/customLabels";
 
 export default function Feed() {
   // to handle all the data related to this component
@@ -39,13 +29,33 @@ export default function Feed() {
     feedName: "",
     storeCurrencyType: "MNX",
     appendCurrencyOptions: "Do Not append.",
-    featuredProductsTags: {},
+    featuredProductsTags: ["tag1", "tag2"],
+    variantTitleOption: "Do NOT append (default)",
+    customLabels: {
+      customLabel0: "",
+      customLabel1: "",
+      customLabel2: "",
+      customLabel3: "",
+      customLabel4: "",
+    },
+    customNumbers: {
+      customNumber0: "",
+      customNumber1: "",
+      customNumber2: "",
+      customNumber3: "",
+      customNumber4: "",
+    },
+    excludeOptionsSize: "",
+    shippingLabel: "",
   });
 
   //state to handle validations error
   const [validationsError, setValidationsError] = useState({
     feedNameError: "",
   });
+
+  // to take input of tags from user
+  const [takeTagsInput, setTakeTagsInput] = useState();
 
   console.log("productFeedData: ", productFeed);
 
@@ -83,104 +93,49 @@ export default function Feed() {
 
     return Object.values(updatedErrors).some((error) => error !== "");
   }
-  
 
   // to handle the data submission
   function submitFormData() {
     if (!handleValidationsError()) {
       // here we can add the multiple conditions
-      submit(productFeed, { method: "post", options: "" });
+      // submit({productFeed}, { method: "post", options: "" });
       console.log("action function called successfully.");
     } else {
       console.log("please complete all the requirements to submit the data.");
     }
   }
 
-  const deselectedOptions = useMemo(
-    () => [
-      { value: "rustic", label: "Rustic" },
-      { value: "antique", label: "Antique" },
-      { value: "vinyl", label: "Vinyl" },
-      { value: "vintage", label: "Vintage" },
-      { value: "refurbished", label: "Refurbished" },
-    ],
-    [],
-  );
+  // to remove the tags
+  const removeTag = useCallback((tag) => {
+    setProductFeed((prev) => ({
+      ...prev,
+      featuredProductsTags: prev.featuredProductsTags.filter(
+        (currentTag) => currentTag !== tag,
+      ),
+    }));
+  }, []);
 
-  const [selectedOptions, setSelectedOptions] = useState([]);
-  const [inputValue, setInputValue] = useState("");
-  const [options, setOptions] = useState(deselectedOptions);
+  // to handle labels and names
+  const handleNumberAndLabel = useCallback((type, innerType, index, value) => {
+    console.log(
+      "type",
+      type,
+      "innerType",
+      innerType,
+      "index",
+      index,
+      "value",
+      value,
+    );
 
-  const escapeSpecialRegExCharacters = useCallback(
-    (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
-    [],
-  );
-
-  const updateText = useCallback(
-    (value) => {
-      setInputValue(value);
-
-      if (value === "") {
-        setOptions(deselectedOptions);
-        return;
-      }
-
-      const filterRegex = new RegExp(escapeSpecialRegExCharacters(value), "i");
-      const resultOptions = deselectedOptions.filter((option) =>
-        option.label.match(filterRegex),
-      );
-      setOptions(resultOptions);
-    },
-    [deselectedOptions, escapeSpecialRegExCharacters],
-  );
-
-  const updateSelection = useCallback(
-    (selected) => {
-      if (selectedOptions.includes(selected)) {
-        setSelectedOptions(
-          selectedOptions.filter((option) => option !== selected),
-        );
-      } else {
-        setSelectedOptions([...selectedOptions, selected]);
-      }
-
-      updateText("");
-    },
-    [selectedOptions, updateText],
-  );
-
-  const removeTag = useCallback(
-    (tag) => () => {
-      const options = [...selectedOptions];
-      options.splice(options.indexOf(tag), 1);
-      setSelectedOptions(options);
-    },
-    [selectedOptions],
-  );
-
-  const tagsMarkup = selectedOptions.map((option) => (
-    <Tag key={`option-${option}`} onRemove={removeTag(option)}>
-      {option}
-    </Tag>
-  ));
-
-  const optionsMarkup =
-    options.length > 0
-      ? options.map((option) => {
-          const { label, value } = option;
-
-          return (
-            <Listbox.Option
-              key={`${value}`}
-              value={value}
-              selected={selectedOptions.includes(value)}
-              accessibilityLabel={label}
-            >
-              {label}
-            </Listbox.Option>
-          );
-        })
-      : null;
+    setProductFeed((prevFeed) => ({
+      ...prevFeed,
+      [type]: {
+        ...prevFeed[type],
+        [`${innerType}${index}`]: value,
+      },
+    }));
+  }, []);
 
   return (
     <Page
@@ -263,38 +218,11 @@ export default function Feed() {
                     }
                   />
                   {/* add here conditional  With multi-select and manual selection */}
-  
                 </BlockStack>
               ))}
-                              <div style={{height: '225px'}}>
-      <Combobox
-        allowMultiple
-        activator={
-          <Combobox.TextField
-            prefix={<Icon source={SearchIcon} />}
-            onChange={updateText}
-            label="Search tags"
-            labelHidden
-            value={inputValue}
-            placeholder="Search tags"
-            autoComplete="off"
-          />
-        }
-      >
-        {optionsMarkup ? (
-          <Listbox
-            autoSelection={AutoSelection.None}
-            onSelect={updateSelection}
-          >
-            {optionsMarkup}
-          </Listbox>
-        ) : null}
-      </Combobox>
-      <TextContainer>
-        <LegacyStack>{tagsMarkup}</LegacyStack>
-      </TextContainer>
-    </div>
             </Box>
+            {/* add search-bar and checkBox */}
+            <Box></Box>
           </BlockStack>
         </Card>
         <Card>
@@ -303,54 +231,23 @@ export default function Feed() {
               Custom Labels
             </Text>
             <InlineGrid columns={2} gap="400">
-              <Box>
-                <BlockStack gap="300">
-                  <Select
-                    label="Custom Label 0"
-                    options={storeCurrencyOptions}
-                    onChange={(value) =>
-                      handleInputChange("storeCurrencyType", value)
-                    }
-                    value={productFeed.storeCurrencyType}
-                  />
-                  <Select
-                    label="Custom Label 1"
-                    options={storeCurrencyOptions}
-                    onChange={(value) =>
-                      handleInputChange("storeCurrencyType", value)
-                    }
-                    value={productFeed.storeCurrencyType}
-                  />
-                  <Select
-                    label="Custom Label 2"
-                    options={storeCurrencyOptions}
-                    onChange={(value) =>
-                      handleInputChange("storeCurrencyType", value)
-                    }
-                    value={productFeed.storeCurrencyType}
-                  />
-                </BlockStack>
-              </Box>
-              <Box>
-                <BlockStack gap="300">
-                  <Select
-                    label="Custom Label 3"
-                    options={storeCurrencyOptions}
-                    onChange={(value) =>
-                      handleInputChange("storeCurrencyType", value)
-                    }
-                    value={productFeed.storeCurrencyType}
-                  />
-                  <Select
-                    label="Custom Label 4"
-                    options={storeCurrencyOptions}
-                    onChange={(value) =>
-                      handleInputChange("storeCurrencyType", value)
-                    }
-                    value={productFeed.storeCurrencyType}
-                  />
-                </BlockStack>
-              </Box>
+              {Array.from({ length: 5 }, (_, index) => index).map((index) => (
+                <Select
+                  key={index}
+                  label={`Custom Label ${index}`}
+                  options={customLabelSelect}
+                  placeholder={`Custom Label ${index}`}
+                  onChange={(value) =>
+                    handleNumberAndLabel(
+                      "customLabels",
+                      "customLabel",
+                      index,
+                      value,
+                    )
+                  }
+                  value={productFeed.customLabels[`customLabel${index}`]}
+                />
+              ))}
             </InlineGrid>
           </BlockStack>
         </Card>
@@ -360,55 +257,71 @@ export default function Feed() {
               Custom Numbers
             </Text>
             <InlineGrid columns={2} gap="400">
-              <Box>
-                <BlockStack gap="300">
-                  <Select
-                    label="Custom Label 0"
-                    options={storeCurrencyOptions}
-                    onChange={(value) =>
-                      handleInputChange("storeCurrencyType", value)
-                    }
-                    value={productFeed.storeCurrencyType}
-                  />
-                  <Select
-                    label="Custom Label 1"
-                    options={storeCurrencyOptions}
-                    onChange={(value) =>
-                      handleInputChange("storeCurrencyType", value)
-                    }
-                    value={productFeed.storeCurrencyType}
-                  />
-                  <Select
-                    label="Custom Label 2"
-                    options={storeCurrencyOptions}
-                    onChange={(value) =>
-                      handleInputChange("storeCurrencyType", value)
-                    }
-                    value={productFeed.storeCurrencyType}
-                  />
-                </BlockStack>
-              </Box>
-              <Box>
-                <BlockStack gap="300">
-                  <Select
-                    label="Custom Label 3"
-                    options={storeCurrencyOptions}
-                    onChange={(value) =>
-                      handleInputChange("storeCurrencyType", value)
-                    }
-                    value={productFeed.storeCurrencyType}
-                  />
-                  <Select
-                    label="Custom Label 4"
-                    options={storeCurrencyOptions}
-                    onChange={(value) =>
-                      handleInputChange("storeCurrencyType", value)
-                    }
-                    value={productFeed.storeCurrencyType}
-                  />
-                </BlockStack>
-              </Box>
+              {Array.from({ length: 5 }, (_, index) => index).map((index) => (
+                <Select
+                  key={index}
+                  label={`Custom Numbers ${index}`}
+                  options={customLabelSelect}
+                  placeholder={`Custom Numbers ${index}`}
+                  onChange={(value) =>
+                    handleNumberAndLabel(
+                      "customNumbers",
+                      "customNumber",
+                      index,
+                      value,
+                    )
+                  }
+                  value={productFeed.customNumbers[`customNumber${index}`]}
+                />
+              ))}
             </InlineGrid>
+          </BlockStack>
+        </Card>
+        <Card>
+          <BlockStack gap="200">
+            <Text variant="headingSm" as="h6">
+            Featured collection on custom labels
+            </Text>
+            <div
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  console.log("new tag added.");
+                  //push the new tag into state
+                  if (takeTagsInput) {
+                    setProductFeed((prev) => ({
+                      ...prev,
+                      featuredProductsTags: [
+                        ...prev.featuredProductsTags,
+                        takeTagsInput,
+                      ],
+                    }));
+                    setTakeTagsInput("");
+                  }
+                }
+              }}
+            >
+              <TextField
+                name="feedName"
+                value={takeTagsInput}
+                onChange={(value) => setTakeTagsInput(value)}
+                autoComplete="off"
+                placeholder="Enter Featured Products Tags"
+
+                // error={
+                //   validationsError.feedNameError.length === 0
+                //     ? ""
+                //     : validationsError.feedNameError
+                // }
+              />
+            </div>
+            {/* show conditional tags here */}
+            <LegacyStack spacing="tight">
+              {productFeed.featuredProductsTags.map((option, index) => (
+                <Tag key={index} onRemove={() => removeTag(option)}>
+                  {option}
+                </Tag>
+              ))}
+            </LegacyStack>
           </BlockStack>
         </Card>
         <Card>
@@ -417,54 +330,81 @@ export default function Feed() {
               Featured Products tags on custom labels (Press enter after you
               type tag)
             </Text>
-            <TextField
-              name="feedName"
-              value={productFeed.feedName}
-              onChange={(value) => handleInputChange("feedName", value)}
-              autoComplete="off"
-              placeholder="Enter Featured Products Tags"
-              error={
-                validationsError.feedNameError.length === 0
-                  ? ""
-                  : validationsError.feedNameError
-              }
-            />
+            <div
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  console.log("new tag added.");
+                  //push the new tag into state
+                  if (takeTagsInput) {
+                    setProductFeed((prev) => ({
+                      ...prev,
+                      featuredProductsTags: [
+                        ...prev.featuredProductsTags,
+                        takeTagsInput,
+                      ],
+                    }));
+                    setTakeTagsInput("");
+                  }
+                }
+              }}
+            >
+              <TextField
+                name="feedName"
+                value={takeTagsInput}
+                onChange={(value) => setTakeTagsInput(value)}
+                autoComplete="off"
+                placeholder="Enter Featured Products Tags"
+
+                // error={
+                //   validationsError.feedNameError.length === 0
+                //     ? ""
+                //     : validationsError.feedNameError
+                // }
+              />
+            </div>
             {/* show conditional tags here */}
-            {}
+            <LegacyStack spacing="tight">
+              {productFeed.featuredProductsTags.map((option, index) => (
+                <Tag key={index} onRemove={() => removeTag(option)}>
+                  {option}
+                </Tag>
+              ))}
+            </LegacyStack>
           </BlockStack>
         </Card>
         <Card>
           <BlockStack gap="200">
             <Text variant="headingSm" as="h6">
-              Variant Title
+              Exclude options ( such as size) from the generated variant titles
+              ( above).
             </Text>
             <TextField
-              name="feedName"
-              value={productFeed.feedName}
-              onChange={(value) => handleInputChange("feedName", value)}
+              name=""
+              value={productFeed.excludeOptionsSize}
+              onChange={(value) => handleInputChange("excludeOptionsSize", value)}
               autoComplete="off"
               placeholder="Text to exclude"
-              error={
-                validationsError.feedNameError.length === 0
-                  ? ""
-                  : validationsError.feedNameError
-              }
+              // error={
+              //   validationsError.feedNameError.length === 0
+              //     ? ""
+              //     : validationsError.feedNameError
+              // }
             />
             <Text variant="headingSm" as="h6">
               Shipping Label (applies to all products feed)
             </Text>
 
             <TextField
-              name="feedName"
-              value={productFeed.feedName}
-              onChange={(value) => handleInputChange("feedName", value)}
+              name="shippingLabel"
+              value={productFeed.shippingLabel}
+              onChange={(value) => handleInputChange("shippingLabel", value)}
               autoComplete="off"
               placeholder="Shipping label"
-              error={
-                validationsError.feedNameError.length === 0
-                  ? ""
-                  : validationsError.feedNameError
-              }
+              // error={
+              //   validationsError.feedNameError.length === 0
+              //     ? ""
+              //     : validationsError.feedNameError
+              // }
             />
           </BlockStack>
         </Card>
@@ -482,13 +422,12 @@ export default function Feed() {
                       key={id}
                       label={`${variantItems.option} - ${variantItems.description}`}
                       id={variantItems.option}
-                      name="appendCurrencyOptions"
+                      name="variantTitleOption"
                       checked={
-                        productFeed.appendCurrencyOptions ===
-                        variantItems.option
+                        productFeed.variantTitleOption === variantItems.option
                       }
                       onChange={(_, newValue) =>
-                        handleInputChange("appendCurrencyOptions", newValue)
+                        handleInputChange("variantTitleOption", newValue)
                       }
                     />
                   </BlockStack>
@@ -496,6 +435,9 @@ export default function Feed() {
               </Box>
             </Box>
           </BlockStack>
+        </Card>
+        <Card>
+          <BlockStack gap="200"></BlockStack>
         </Card>
         <Box>
           <Button onClick={submitFormData} variant="primary">
