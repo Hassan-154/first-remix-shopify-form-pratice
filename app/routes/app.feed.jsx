@@ -31,6 +31,7 @@ export default function Feed() {
     },
     featuredCustomLabels: {
       option: "",
+      productsCollections:[]
     },
     featuredProductsTags: ["tag1", "tag2"],
     variantTitleOption: "Do NOT append (default)",
@@ -182,6 +183,10 @@ export default function Feed() {
     }));
   }, []);
 
+  const specificCollectionIds = [
+    'gid://shopify/Collection/12345', // Replace with your specific collection IDs
+    'gid://shopify/Collection/67890',
+];
   // to handle the resource picker
   async function selectProductsFromResources(category) {
     try {
@@ -189,15 +194,21 @@ export default function Feed() {
       const products = await window.shopify.resourcePicker({
         type: "collection",
         multiple: true,
+        filter: specificCollectionIds.map(id => ({ id })),
       });
 
+      // to added the selected product in state from resource-picker
       setProductFeed((prev) => ({
         ...prev,
         [category]: {
           ...prev[category],
-          productsCollections: products,
+          productsCollections: [
+            ...(prev[category]?.productsCollections || []),
+            ...products
+          ],
         },
       }));
+      
       console.log(products);
     } catch (error) {
       console.error("Error selecting products:", error);

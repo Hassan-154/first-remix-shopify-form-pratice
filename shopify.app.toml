@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "183ba44346429003f4a8015caea9ebf7"
-application_url = "https://watershed-lower-cooperation-resources.trycloudflare.com"
+application_url = "https://songs-stick-assessing-valve.trycloudflare.com"
 embedded = true
 name = "pratice-project"
 handle = "pratice-project"
@@ -19,9 +19,9 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [
-  "https://watershed-lower-cooperation-resources.trycloudflare.com/auth/callback",
-  "https://watershed-lower-cooperation-resources.trycloudflare.com/auth/shopify/callback",
-  "https://watershed-lower-cooperation-resources.trycloudflare.com/api/auth/callback"
+  "https://songs-stick-assessing-valve.trycloudflare.com/auth/callback",
+  "https://songs-stick-assessing-valve.trycloudflare.com/auth/shopify/callback",
+  "https://songs-stick-assessing-valve.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]
