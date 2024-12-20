@@ -29,7 +29,9 @@ export default function Feed() {
     allProductsOrSome: {
       option: "All Products",
     },
-
+    featuredCustomLabels: {
+      option: "",
+    },
     featuredProductsTags: ["tag1", "tag2"],
     variantTitleOption: "Do NOT append (default)",
     useCompareAtPriceOption: "Use both",
@@ -83,10 +85,10 @@ export default function Feed() {
 
         setProductFeed((prev) => ({
           ...prev,
-          allProductsOrSome: {
-            ...prev.allProductsOrSome,
+          [optionName]: {
+            ...prev[optionName],
             productsCollections:
-              prev.allProductsOrSome.productsCollections.filter(
+              prev[optionName].productsCollections.filter(
                 (product) => product.id !== dataFromJSon,
               ),
           },
@@ -299,7 +301,7 @@ export default function Feed() {
                       <Tag
                         key={index}
                         onRemove={() =>
-                          handleInputCollection(option.id, "remove")
+                          handleInputCollection(option.id, "remove", "allProductsOrSome")
                         }
                       >
                         {option.title}
@@ -328,38 +330,41 @@ export default function Feed() {
                     checked={
                       productFeed.exportModeOption === productsItems.option
                     }
-                    onChange={(_, newValue) => handleInputChange("exportModeOption", newValue)}
+                    onChange={(_, newValue) =>
+                      handleInputChange("exportModeOption", newValue)
+                    }
                   />
                 </BlockStack>
               ))}
             </BlockStack>
 
-            { productFeed.exportModeOption === "Export only one variant of a product" &&
-             <BlockStack gap="150">
-             <Text variant="headingSm" as="h6">
-               Export Mode
-             </Text>
+            {productFeed.exportModeOption ===
+              "Export only one variant of a product" && (
+              <BlockStack gap="150">
+                <Text variant="headingSm" as="h6">
+                  Export Mode
+                </Text>
 
-             <BlockStack gap="150">
-               {exportModeData[1].exportMode?.map((productsItems, id) => (
-                 <BlockStack key={id}>
-                   <RadioButton
-                     label={productsItems.option}
-                     id={productsItems.option}
-                     name=""
-                     checked={
-                       productFeed.exportOnlyModeType ===
-                       productsItems.option
-                     }
-                     onChange={(_, newValue) =>
-                       handleInputChange("exportOnlyModeType", newValue)
-                     }
-                   />
-                 </BlockStack>
-               ))}
-             </BlockStack>
-           </BlockStack>
-           }
+                <BlockStack gap="150">
+                  {exportModeData[1].exportMode?.map((productsItems, id) => (
+                    <BlockStack key={id}>
+                      <RadioButton
+                        label={productsItems.option}
+                        id={productsItems.option}
+                        name=""
+                        checked={
+                          productFeed.exportOnlyModeType ===
+                          productsItems.option
+                        }
+                        onChange={(_, newValue) =>
+                          handleInputChange("exportOnlyModeType", newValue)
+                        }
+                      />
+                    </BlockStack>
+                  ))}
+                </BlockStack>
+              </BlockStack>
+            )}
           </InlineGrid>
         </Card>
         <Card>
@@ -429,14 +434,6 @@ export default function Feed() {
                   label={`Custom Numbers ${index}`}
                   options={customLabelSelect}
                   placeholder={`Custom Numbers ${index}`}
-                  onChange={(value) =>
-                    handleNumberAndLabel(
-                      "customNumbers",
-                      "customNumber",
-                      index,
-                      value,
-                    )
-                  }
                   value={productFeed.customNumbers[`customNumber${index}`]}
                 />
               ))}
@@ -448,46 +445,40 @@ export default function Feed() {
             <Text variant="headingSm" as="h6">
               Featured collection on custom labels
             </Text>
+
             <div
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  console.log("new tag added.");
-                  //push the new tag into state
-                  if (takeTagsInput) {
-                    setProductFeed((prev) => ({
-                      ...prev,
-                      featuredProductsTags: [
-                        ...prev.featuredProductsTags,
-                        takeTagsInput,
-                      ],
-                    }));
-                    setTakeTagsInput("");
-                  }
-                }
-              }}
+              onClick={() =>
+                selectProductsFromResources("featuredCustomLabels")
+              }
             >
               <TextField
                 name="feedName"
                 value={takeTagsInput}
                 onChange={(value) => setTakeTagsInput(value)}
                 autoComplete="off"
-                placeholder="Enter Featured Products Tags"
-
-                // error={
-                //   validationsError.feedNameError.length === 0
-                //     ? ""
-                //     : validationsError.feedNameError
-                // }
+                placeholder="Search Collection"
               />
             </div>
+
             {/* show conditional tags here */}
-            <LegacyStack spacing="tight">
-              {productFeed.featuredProductsTags.map((option, index) => (
-                <Tag key={index} onRemove={() => removeTag(option)}>
-                  {option}
-                </Tag>
-              ))}
-            </LegacyStack>
+            <Box>
+              {productFeed.featuredCustomLabels.productsCollections && (
+                <LegacyStack spacing="tight">
+                  {productFeed.featuredCustomLabels.productsCollections.map(
+                    (option, index) => (
+                      <Tag
+                        key={index}
+                        onRemove={() =>
+                          handleInputCollection(option.id, "remove", "featuredCustomLabels" )
+                        }
+                      >
+                        {option.title}
+                      </Tag>
+                    ),
+                  )}
+                </LegacyStack>
+              )}
+            </Box>
           </BlockStack>
         </Card>
         <Card>
