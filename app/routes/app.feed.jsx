@@ -34,21 +34,8 @@ export default function Feed() {
     variantTitleOption: "Do NOT append (default)",
     useCompareAtPriceOption: "Use both",
     variantTitleCustomOption: "",
-    exportModeOption: [
-      {
-        option: "Export all variants of a product",
-        modeType: [
-          {
-            id: 1,
-            option: "Export first variant of a product(default)",
-          },
-          {
-            id: 2,
-            option: "",
-          },
-        ],
-      },
-    ],
+    exportModeOption: "Export all variants of a product",
+    exportOnlyModeType: "Export first variant of a product(default)",
     customLabels: {
       customLabel0: "",
       customLabel1: "",
@@ -91,8 +78,19 @@ export default function Feed() {
   //to update data related to product collection
   const handleInputCollection = useCallback(
     (dataFromJSon, category, optionName) => {
-      if (dataFromJSon === "remove") {
-        console.log("now remove can work.");
+      if (category === "remove") {
+        console.log("now remove can work.", dataFromJSon);
+
+        setProductFeed((prev) => ({
+          ...prev,
+          allProductsOrSome: {
+            ...prev.allProductsOrSome,
+            productsCollections:
+              prev.allProductsOrSome.productsCollections.filter(
+                (product) => product.id !== dataFromJSon,
+              ),
+          },
+        }));
       } else {
         setProductFeed((prev) => {
           const { productsCollections, ...rest } = prev[category];
@@ -292,11 +290,18 @@ export default function Feed() {
                   />
                 </BlockStack>
               ))}
+            </Box>
+            <Box>
               {productFeed.allProductsOrSome.productsCollections && (
                 <LegacyStack spacing="tight">
                   {productFeed.allProductsOrSome.productsCollections.map(
                     (option, index) => (
-                      <Tag key={index} onRemove={handleInputCollection( "remove", option.id)}>
+                      <Tag
+                        key={index}
+                        onRemove={() =>
+                          handleInputCollection(option.id, "remove")
+                        }
+                      >
                         {option.title}
                       </Tag>
                     ),
@@ -304,48 +309,58 @@ export default function Feed() {
                 </LegacyStack>
               )}
             </Box>
-            {/* add search-bar and checkBox */}
-            <Box></Box>
           </BlockStack>
         </Card>
         <Card>
           {/* Export Mode under development */}
-          <BlockStack gap="150">
-            <Text variant="headingSm" as="h6">
-              Export Mode
-            </Text>
-            {exportModeData.map((productsItems, id) => (
-              <InlineGrid columns={2} key={id}>
-                <BlockStack>
+          <InlineGrid columns={2}>
+            <BlockStack gap="150">
+              <Text variant="headingSm" as="h6">
+                Export Mode
+              </Text>
+              {exportModeData.map((productsItems, id) => (
+                <BlockStack key={id}>
                   <RadioButton
                     key={id}
                     label={productsItems.option}
                     id={productsItems.option}
                     name=""
                     checked={
-                      productFeed.appendCurrencyOptions === productsItems.option
+                      productFeed.exportModeOption === productsItems.option
                     }
-                    onChange={(_, newValue) => handleInputChange("", newValue)}
+                    onChange={(_, newValue) => handleInputChange("exportModeOption", newValue)}
                   />
                 </BlockStack>
-                <BlockStack>
-                  <RadioButton
-                    key={id}
-                    label={productsItems.option}
-                    id={productsItems.option}
-                    name=""
-                    checked={
-                      productFeed.appendCurrencyOptions === productsItems.option
-                    }
-                    onChange={(_, newValue) => handleInputChange("", newValue)}
-                  />
-                </BlockStack>
-              </InlineGrid>
-            ))}
+              ))}
+            </BlockStack>
 
-            {/* add search-bar and checkBox */}
-            <Box></Box>
-          </BlockStack>
+            { productFeed.exportModeOption === "Export only one variant of a product" &&
+             <BlockStack gap="150">
+             <Text variant="headingSm" as="h6">
+               Export Mode
+             </Text>
+
+             <BlockStack gap="150">
+               {exportModeData[1].exportMode?.map((productsItems, id) => (
+                 <BlockStack key={id}>
+                   <RadioButton
+                     label={productsItems.option}
+                     id={productsItems.option}
+                     name=""
+                     checked={
+                       productFeed.exportOnlyModeType ===
+                       productsItems.option
+                     }
+                     onChange={(_, newValue) =>
+                       handleInputChange("exportOnlyModeType", newValue)
+                     }
+                   />
+                 </BlockStack>
+               ))}
+             </BlockStack>
+           </BlockStack>
+           }
+          </InlineGrid>
         </Card>
         <Card>
           {/* Use 'Compare at' price */}

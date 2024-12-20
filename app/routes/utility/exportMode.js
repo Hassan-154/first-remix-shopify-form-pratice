@@ -1,4 +1,4 @@
-const useCompareAtPrice = [
+const exportMode = [
   {
     id: 1,
     option: "Export all variants of a product",
@@ -19,4 +19,4 @@ const useCompareAtPrice = [
   },
 ];
 
-export default useCompareAtPrice;
+export default exportMode;
