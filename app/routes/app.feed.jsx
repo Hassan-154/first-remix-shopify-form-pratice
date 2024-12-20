@@ -87,10 +87,9 @@ export default function Feed() {
           ...prev,
           [optionName]: {
             ...prev[optionName],
-            productsCollections:
-              prev[optionName].productsCollections.filter(
-                (product) => product.id !== dataFromJSon,
-              ),
+            productsCollections: prev[optionName].productsCollections.filter(
+              (product) => product.id !== dataFromJSon,
+            ),
           },
         }));
       } else {
@@ -191,6 +190,7 @@ export default function Feed() {
         type: "collection",
         multiple: true,
       });
+
       setProductFeed((prev) => ({
         ...prev,
         [category]: {
@@ -212,7 +212,6 @@ export default function Feed() {
     >
       <BlockStack gap="500">
         <Card>
-          <Button>click to check resource-picker</Button>
           <BlockStack gap="500">
             <TextField
               label="Feed Name"
@@ -301,7 +300,11 @@ export default function Feed() {
                       <Tag
                         key={index}
                         onRemove={() =>
-                          handleInputCollection(option.id, "remove", "allProductsOrSome")
+                          handleInputCollection(
+                            option.id,
+                            "remove",
+                            "allProductsOrSome",
+                          )
                         }
                       >
                         {option.title}
@@ -453,7 +456,6 @@ export default function Feed() {
             >
               <TextField
                 name="feedName"
-                value={takeTagsInput}
                 onChange={(value) => setTakeTagsInput(value)}
                 autoComplete="off"
                 placeholder="Search Collection"
@@ -469,7 +471,11 @@ export default function Feed() {
                       <Tag
                         key={index}
                         onRemove={() =>
-                          handleInputCollection(option.id, "remove", "featuredCustomLabels" )
+                          handleInputCollection(
+                            option.id,
+                            "remove",
+                            "featuredCustomLabels",
+                          )
                         }
                       >
                         {option.title}
@@ -657,9 +663,6 @@ export default function Feed() {
 
             {/* add search-bar and checkBox */}
           </BlockStack>
-        </Card>
-        <Card>
-          <BlockStack gap="200"></BlockStack>
         </Card>
         <Box>
           <Button onClick={submitFormData} variant="primary">
